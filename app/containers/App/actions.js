@@ -21,6 +21,7 @@ import {
   LOAD_REPOS_ERROR,
   EXCHANGE_RATES_LOADED_SUCCESS,
   LOAD_EXCHANGE_RATES,
+  LOAD_EXCHANGE_RATES_ERROR,
 } from './constants';
 
 /**
@@ -64,15 +65,24 @@ export function repoLoadingError(error) {
   };
 }
 
-export function exchangeRatesLoaded(results) {
-  return {
-    type: EXCHANGE_RATES_LOADED_SUCCESS,
-    payload: results,
-  };
-}
+// REQUEST EXCHANGE RATES API FROM BLOCKCHAIN - ACTIONS
 
 export function requestExchangeRates() {
   return {
     type: LOAD_EXCHANGE_RATES,
+  };
+}
+
+export function exchangeRatesLoaded(results) {
+  return {
+    type: EXCHANGE_RATES_LOADED_SUCCESS,
+    results,
+  };
+}
+
+export function exchangeRatesLoadingError(error) {
+  return {
+    type: LOAD_EXCHANGE_RATES_ERROR,
+    error,
   };
 }

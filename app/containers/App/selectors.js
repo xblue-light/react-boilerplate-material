@@ -33,17 +33,17 @@ const makeSelectRepos = () =>
     globalState => globalState.userData.repositories,
   );
 
-const makeSelectLocation = () =>
-  createSelector(
-    selectRouter,
-    routerState => routerState.location,
-  );
-
 // EXCHANGE RATE SELECTOR
 const makeSelectExchangeRates = () =>
   createSelector(
     selectGlobal,
     globalState => globalState.exchangeRates,
+  );
+
+const makeSelectLocation = () =>
+  createSelector(
+    selectRouter,
+    routerState => routerState.location,
   );
 
 export {

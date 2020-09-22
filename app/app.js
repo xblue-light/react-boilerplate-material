@@ -16,6 +16,9 @@ import { ConnectedRouter } from 'connected-react-router';
 import FontFaceObserver from 'fontfaceobserver';
 import history from 'utils/history';
 import 'sanitize.css/sanitize.css';
+import { orange, blue, grey, green, yellow } from '@material-ui/core/colors';
+// Material UI theme
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 
 // Import root app
 import App from 'containers/App';
@@ -46,15 +49,41 @@ const initialState = {};
 const store = configureStore(initialState, history);
 const MOUNT_NODE = document.getElementById('app');
 
+// Custom theme Material UI
+const theme = createMuiTheme({
+  // Basically you can override the structure that is described like in the default documentation
+  // https://material-ui.com/customization/default-theme/
+  palette: {
+    // The type of theme either dark/black
+    type: 'dark',
+    primary: {
+      main: blue[500],
+    },
+    // Instead of using material colors we can make our own custom colors
+    // primary: {
+    //   main: '#CCCCCC',
+    // },
+    secondary: {
+      main: yellow[500],
+    },
+  },
+  status: {
+    danger: orange[700],
+    success: green[400],
+  },
+});
+
 const render = messages => {
   ReactDOM.render(
-    <Provider store={store}>
-      <LanguageProvider messages={messages}>
-        <ConnectedRouter history={history}>
-          <App />
-        </ConnectedRouter>
-      </LanguageProvider>
-    </Provider>,
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <LanguageProvider messages={messages}>
+          <ConnectedRouter history={history}>
+            <App />
+          </ConnectedRouter>
+        </LanguageProvider>
+      </Provider>
+    </ThemeProvider>,
     MOUNT_NODE,
   );
 };

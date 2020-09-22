@@ -18,6 +18,7 @@ import {
   makeSelectRepos,
   makeSelectLoading,
   makeSelectError,
+  makeSelectExchangeRates,
 } from 'containers/App/selectors';
 import H2 from 'components/H2';
 import ReposList from 'components/ReposList';
@@ -25,6 +26,7 @@ import AtPrefix from './AtPrefix';
 import CenteredSection from './CenteredSection';
 import Form from './Form';
 import Input from './Input';
+//import Button from '../../components/Button';
 import Section from './Section';
 import messages from './messages';
 // ACTIONS
@@ -38,7 +40,39 @@ import { makeSelectUsername } from './selectors';
 import reducer from './reducer';
 import saga from './saga';
 
+import StyledSelect from '../../components/SelectAlpha';
+import { makeStyles } from '@material-ui/core/styles';
+import Checkbox from '@material-ui/core/Checkbox';
+import Button from '@material-ui/core/Button';
+
 const key = 'home';
+
+// Material UI makeStyles
+const useStyles = makeStyles(theme => ({
+  root: {
+    padding: '15px, 15px',
+    color: 'white',
+    //color: theme.status.success,
+    // '&$checked': {
+    //   color: theme.status.success,
+    // },
+  },
+  checked: {},
+}));
+
+function CustomCheckbox() {
+  const classes = useStyles();
+
+  return (
+    <Checkbox
+      defaultChecked
+      classes={{
+        root: classes.root,
+        checked: classes.checked,
+      }}
+    />
+  );
+}
 
 export function HomePage({
   username,
@@ -46,15 +80,17 @@ export function HomePage({
   error,
   repos,
   onSubmitForm,
+  exchangeRates,
   onChangeUsername,
   onSubmitRequestExchangeAPI,
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
-
+  const classes = useStyles();
   useEffect(() => {
     // When initial state username is not null, submit the form to load repos
     if (username && username.trim().length > 0) onSubmitForm();
+    // console.log(exchangeRates || []);
   }, []);
 
   const reposListProps = {
@@ -82,7 +118,7 @@ export function HomePage({
           </p>
         </CenteredSection>
         <Section>
-          <H2>
+          <H2 primary>
             <FormattedMessage {...messages.trymeHeader} />
           </H2>
           <Form onSubmit={onSubmitForm}>
@@ -103,8 +139,32 @@ export function HomePage({
           <ReposList {...reposListProps} />
         </Section>
         <Section>
-          <button onClick={onSubmitRequestExchangeAPI}>Load API</button>
+          <Button onClick={onSubmitRequestExchangeAPI}>REQUEST API</Button>
         </Section>
+
+        <br />
+
+        <StyledSelect>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+        </StyledSelect>
+
+        <br />
+
+        <CustomCheckbox />
+
+        <br />
+
+        <Button
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.root }}
+        >
+          Primary
+        </Button>
       </div>
     </article>
   );
@@ -117,7 +177,7 @@ HomePage.propTypes = {
   onSubmitForm: PropTypes.func,
   username: PropTypes.string,
   onChangeUsername: PropTypes.func,
-  exchangeRates: PropTypes.array,
+  exchangeRates: PropTypes.any,
   onSubmitRequestExchangeAPI: PropTypes.func,
 };
 
@@ -126,18 +186,19 @@ const mapStateToProps = createStructuredSelector({
   username: makeSelectUsername(),
   loading: makeSelectLoading(),
   error: makeSelectError(),
-  exchangeRates: makeSelectorExchangeRates(),
+  exchangeRates: makeSelectExchangeRates(),
 });
 
 export function mapDispatchToProps(dispatch) {
   return {
     onChangeUsername: evt => dispatch(changeUsername(evt.target.value)),
-    // REQUEST THE EXCHANGE API
-    onSubmitRequestExchangeAPI: () => dispatch(requestExchangeRates()),
+
     onSubmitForm: evt => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       dispatch(loadRepos());
     },
+    // DISPATCH THE REQUEST THE EXCHANGE API ACTION
+    onSubmitRequestExchangeAPI: e => dispatch(requestExchangeRates()),
   };
 }
 

@@ -2,27 +2,18 @@
  * Gets the repositories of the user from Github
  */
 
-import { call, put, select, takeLatest } from 'redux-saga/effects';
+import { call, put, select, takeLatest, take, delay } from 'redux-saga/effects';
+import { LOAD_REPOS, LOAD_EXCHANGE_RATES } from 'containers/App/constants';
+import { eventChannel, END } from 'redux-saga';
 import {
-  LOAD_REPOS,
-  EXCHANGE_RATES_LOADED_SUCCESS,
-  LOAD_EXCHANGE_RATES,
-} from 'containers/App/constants';
-import { reposLoaded, repoLoadingError } from 'containers/App/actions';
+  reposLoaded,
+  repoLoadingError,
+  exchangeRatesLoadingError,
+  exchangeRatesLoaded,
+} from 'containers/App/actions';
 
 import request from 'utils/request';
 import { makeSelectUsername } from 'containers/HomePage/selectors';
-
-// function* watchRequests() {
-//   // 1- Create a channel for request actions
-//   const requestChan = yield actionChannel('REQUEST');
-//   while (true) {
-//     // 2- take from the channel
-//     const { payload } = yield take(requestChan);
-//     // 3- Note that we're using a blocking call
-//     yield call(handleRequest, payload);
-//   }
-// }
 
 /**
  * Github repos request/response handler
@@ -31,7 +22,6 @@ export function* getRepos() {
   // Select username from store
   const username = yield select(makeSelectUsername());
   const requestURL = `https://api.github.com/users/${username}/repos?type=all&sort=updated`;
-
   try {
     // Call our request helper (see 'utils/request')
     const repos = yield call(request, requestURL);
@@ -41,14 +31,56 @@ export function* getRepos() {
   }
 }
 
+/**
+ * Request latest exchange rates from Blockchain
+ */
 export function* getExchangeRatesFromAPI() {
-  const requestURL = `https://blockchain.info/ticker`;
-  console.log(requestURL);
   try {
-    const results = yield call(request, requestURL);
-    yield put(exchangeRatesLoaded(results));
+    yield call(saga);
   } catch (err) {
-    console.log(err);
+    yield put(exchangeRatesLoadingError(err));
+  } finally {
+    console.log('Finally!');
+  }
+}
+
+// creates an event Channel from an interval of seconds
+function countdown(secs) {
+  return eventChannel(emitter => {
+    const iv = setInterval(() => {
+      secs -= 1;
+      if (secs > 0) {
+        emitter(secs);
+      } else {
+        // this causes the channel to close
+        emitter(END);
+      }
+    }, 4500);
+    // The subscriber must return an unsubscribe function
+    return () => {
+      clearInterval(iv);
+    };
+  });
+}
+
+export function* saga() {
+  // try to have a variable for countdown then somehow flushing that variable so that it always keeps calling countdown
+  const requestURL = `https://blockchain.info/ticker`;
+
+  // define our eventchannel
+  const chan = yield call(countdown, 5);
+  try {
+    while (true) {
+      // take(END) will cause the saga to terminate by jumping to the finally block
+      let seconds = yield take(chan);
+      console.log(`countdown: ${seconds}`);
+      const results = yield call(request, requestURL);
+      yield put(exchangeRatesLoaded(results));
+    }
+  } catch (err) {
+    yield take(END);
+  } finally {
+    console.log('countdown terminated');
   }
 }
 

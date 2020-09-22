@@ -14,6 +14,7 @@ import {
   LOAD_REPOS_ERROR,
   LOAD_EXCHANGE_RATES,
   EXCHANGE_RATES_LOADED_SUCCESS,
+  LOAD_EXCHANGE_RATES_ERROR,
 } from './constants';
 
 // The initial state of the App
@@ -24,7 +25,7 @@ export const initialState = {
   userData: {
     repositories: false,
   },
-  exchangeRates: [],
+  exchangeRates: false,
 };
 
 /* eslint-disable default-case, no-param-reassign */
@@ -52,11 +53,10 @@ const appReducer = (state = initialState, action) =>
       case LOAD_EXCHANGE_RATES:
         draft.loading = true;
         draft.error = false;
-        draft.exchangeRates.push({});
+        draft.exchangeRates = false;
         break;
-
       case EXCHANGE_RATES_LOADED_SUCCESS:
-        draft.exchangeRates.push(action.payload);
+        draft.exchangeRates = action.results;
         draft.loading = false;
         break;
 
